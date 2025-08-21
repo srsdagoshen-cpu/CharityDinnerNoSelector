@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hawaiian Prize Number Selector</title>
+  <style>
+    /* Hawaiian Theme Styling */
+    body {
+      font-family: 'Pacifico', cursive, sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom right, #ff7e5f, #feb47b); /* Sunset gradient */
+      color: white;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 3.5em;
+      margin-bottom: 30px;
+      font-family: 'Pacifico', cursive;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+      color: #ffdd57; /* Golden Hawaiian color */
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .btn-select {
+      font-size: 1.5em;
+      padding: 15px 30px;
+      cursor: pointer;
+      background-color: #ff5f5f;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      margin: 10px;
+    }
+
+    .btn-select:hover {
+      background-color: #ff3344;
+      transform: scale(1.1);
+    }
+
+    /* Clear Button Styling (smaller, blue shade, positioned higher) */
+    .btn-clear {
+      font-size: 1.2em;
+      padding: 12px 25px;
+      cursor: pointer;
+      background-color: #4A90E2; /* Blue shade */
+      color: white;
+      border: none;
+      border-radius: 25px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      position: absolute;
+      top: 80px; /* Higher position */
+      right: 20px;
+    }
+
+    .btn-clear:hover {
+      background-color: #357ABD; /* Darker blue on hover */
+      transform: scale(1.1);
+    }
+
+    .current-number {
+      margin-top: 40px;
+      font-size: 6em; /* Larger size for the current number */
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .previous-numbers {
+      margin-top: 50px;
+      font-size: 1.5em;
+    }
+
+    .previous-numbers h3 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .previous-numbers ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .previous-numbers li {
+      margin-bottom: 10px;
+      padding: 5px;
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      display: inline-block;
+      margin-right: 10px;
+      font-size: 1.2em;
+    }
+
+    /* Hawaiian Vibe Elements: Palm Trees */
+    .palm-tree {
+      position: absolute;
+      top: 10%;
+      left: 5%;
+      font-size: 6em;
+      color: #ffdd57;
+      transform: rotate(-15deg);
+      z-index: 1;
+    }
+
+    .palm-tree2 {
+      position: absolute;
+      top: 25%;
+      right: 5%;
+      font-size: 6em;
+      color: #ffdd57;
+      transform: rotate(15deg);
+      z-index: 1;
+    }
+
+    /* Hawaiian Vibe Background with Tiki Mask Overlay */
+    .tiki-mask {
+      position: absolute;
+      bottom: 10%;
+      left: 30%;
+      font-size: 7em;
+      color: #ffeb3b;
+      opacity: 0.7;
+    }
+
+    /* Animation for Random Number Change */
+    @keyframes animateNumber {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.5);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- Adding Google Fonts for Hawaiian feel -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <h1>Hawaiian Prize Number Selector</h1>
+
+  <!-- Tropical Palm Tree Icons -->
+  <div class="palm-tree">🌴</div>
+  <div class="palm-tree2">🌴</div>
+
+  <button class="btn-select" onclick="selectRandomNumber()">Select Number</button>
+  <button class="btn-clear" onclick="clearAll()">Clear All</button>
+
+  <div class="current-number" id="currentNumber"></div>
+
+  <div class="previous-numbers" id="previousNumbers"></div>
+
+  <script>
+    // Define the valid ranges
+    const ranges = [
+      { start: 1, end: 540 },    // 0001-0540
+      { start: 1001, end: 1100 }, // 1001-1100
+      { start: 2001, end: 2060 }, // 2001-2060
+      { start: 3001, end: 3030 }  // 3001-3030
+    ];
+
+    let availableNumbers = [];
+    let selectedNumbers = [];
+
+    // Generate all valid numbers in the given ranges
+    function generateNumbers() {
+      availableNumbers = [];
+      ranges.forEach(range => {
+        for (let i = range.start; i <= range.end; i++) {
+          availableNumbers.push(i.toString().padStart(4, '0'));
+        }
+      });
+    }
+
+    generateNumbers();
+
+    // Select a random number from available numbers
+    function selectRandomNumber() {
+      if (availableNumbers.length === 0) {
+        alert('No more numbers left!');
+        return;
+      }
+
+      let currentNumberElement = document.getElementById("currentNumber");
+      let timer;
+      let duration = 5000; // 5 seconds duration for the animation
+      let intervalTime = 100; // Change the number every 100ms
+
+      // Randomly select a number for a few seconds
+      let stopAfter = setTimeout(() => {
+        // After 5 seconds, stop the interval and show the final selected number
+        clearInterval(timer);
+
+        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+        const finalNumber = availableNumbers[randomIndex];
+
+        // Remove the selected number from the available list
+        availableNumbers.splice(randomIndex, 1);
+
+        // Add the final selected number to the selected numbers list
+        selectedNumbers.unshift(finalNumber);
+
+        // Display the final selected number
+        currentNumberElement.innerHTML = `<h2>${finalNumber}</h2>`;
+        currentNumberElement.style.opacity = 1; // Fade in the final number
+
+        // Update the list of previous numbers
+        document.getElementById("previousNumbers").innerHTML = `
+          <h3>Previous Numbers</h3>
+          <ul>
+            ${selectedNumbers.map(num => `<li>${num}</li>`).join('')}
+          </ul>
+        `;
+      }, duration);
+
+      // Change the displayed number every 100ms (simulate random selection)
+      timer = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+        const randomNumber = availableNumbers[randomIndex];
+        currentNumberElement.innerHTML = `<h2>${randomNumber}</h2>`;
+      }, intervalTime);
+
+      // Hide the number initially and show it gradually after the animation
+      currentNumberElement.style.opacity = 0;
+      setTimeout(() => {
+        currentNumberElement.style.opacity = 1;
+      }, 500);
+    }
+
+    // Function to clear everything (previous numbers and current display)
+    function clearAll() {
+      // Clear the current number and previous numbers
+      document.getElementById("currentNumber").innerHTML = '';
+      document.getElementById("previousNumbers").innerHTML = '';
+
+      // Reset available numbers and selected numbers
+      generateNumbers();
+      selectedNumbers = [];
+    }
+  </script>
+
+</body>
+</html>
